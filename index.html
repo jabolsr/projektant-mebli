@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Projektant mebli — Abler</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2F5496">
+
+<!-- iOS: obsługa "Dodaj do ekranu głównego" -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Projektant mebli">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-title">
+    <h1>Projektant mebli na wymiar</h1>
+    <span class="subtitle">dekory SWISS KRONO — baza Abler.pl (działa offline)</span>
+  </div>
+  <div class="topbar-actions">
+    <input id="nazwaProjektu" type="text" value="Mój projekt" placeholder="Nazwa projektu">
+    <button id="btnZapisz" class="btn btn-ghost">Zapisz projekt</button>
+    <button id="btnWczytaj" class="btn btn-ghost">Wczytaj projekt</button>
+    <button id="btnDrukuj" class="btn btn-ghost">Drukuj / zapisz PDF</button>
+    <button id="btnEksport" class="btn btn-primary">Eksportuj listę formatek (CSV)</button>
+  </div>
+</header>
+
+<section class="panel panel-preview-caly">
+  <div class="section-header">
+    <h2>Podgląd zestawu (widok z przodu)</h2>
+    <span class="preview-hint">Orientacyjny schemat — proporcje zgodne z podanymi wymiarami.</span>
+  </div>
+  <div id="podgladCaly" class="preview-caly-box"></div>
+</section>
+
+<main class="layout">
+
+  <aside class="panel panel-colors">
+    <h2>Dekory</h2>
+    <input id="szukajKolor" type="text" placeholder="Szukaj po nazwie lub kodzie...">
+    <select id="filtrKategoria"><option value="">Wszystkie kategorie</option></select>
+    <div id="banerWyboruModulu" class="picking-banner hidden">
+      Wybierz dekor dla modułu — kliknij kafelek poniżej.
+      <button id="btnAnulujWyborModulu" class="btn btn-ghost btn-sm">Anuluj, wróć do modułu</button>
+    </div>
+    <div id="paletaKolorow" class="color-grid"></div>
+    <div class="selected-color-box">
+      <div class="selected-color-label">Domyślny dekor projektu:</div>
+      <div id="wybranyDekor" class="selected-color-chip">— nie wybrano —</div>
+    </div>
+  </aside>
+
+  <section class="panel panel-modules">
+    <div class="section-header">
+      <h2>Moduły projektu</h2>
+      <button id="btnDodajModul" class="btn btn-primary">+ Dodaj moduł</button>
+    </div>
+    <div id="listaModulow" class="module-list"></div>
+    <p id="pustyProjekt" class="empty-hint">Brak modułów. Dodaj pierwszy moduł (np. szafkę dolną), żeby zacząć projekt.</p>
+  </section>
+
+  <section class="panel panel-summary">
+    <h2>Lista formatek (zbiorczo)</h2>
+    <div id="podsumowanie" class="summary-box"></div>
+    <div id="ostrzezeniaBox"></div>
+    <div id="agdBox"></div>
+    <div class="table-wrap">
+      <table id="tabelaFormatek">
+        <thead>
+          <tr>
+            <th>Element</th><th>Dekor</th><th>Grub.</th><th>Dł.</th><th>Szer.</th><th>Ilość</th><th>Obrzeże</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="note-box">
+      <strong>Co dalej?</strong> Kliknij „Eksportuj listę formatek”, a potem przekaż plik do
+      systemu <strong>e-Rozkrój</strong> na abler.pl (po zalogowaniu na swoje konto) lub do
+      dowolnego oddziału Abler — zawiera wszystkie wymiary, dekory, ilości, kierunek usłojenia
+      i wskazania oklejania krawędzi. Automatyczne wysyłanie zamówienia nie jest tu dostępne —
+      e-Rozkrój wymaga zalogowania się na indywidualne konto klienta.
+    </div>
+  </section>
+
+</main>
+
+<div id="modalModul" class="modal hidden">
+  <div class="modal-content">
+    <h2 id="modalTytul">Nowy moduł</h2>
+    <div class="form-grid">
+      <label>Nazwa modułu
+        <input id="mNazwa" type="text" placeholder="np. Szafka zlewozmywakowa">
+      </label>
+      <label>Typ modułu
+        <select id="mTyp"></select>
+      </label>
+      <label>Szerokość [mm]
+        <input id="mSzerokosc" type="number" min="100" step="1">
+      </label>
+      <label>Wysokość [mm]
+        <input id="mWysokosc" type="number" min="100" step="1">
+      </label>
+      <label>Głębokość [mm]
+        <input id="mGlebokosc" type="number" min="100" step="1">
+      </label>
+      <label>Grubość płyty [mm]
+        <input id="mGrubosc" type="number" min="8" step="1" value="18">
+      </label>
+      <label>Liczba półek
+        <input id="mPolki" type="number" min="0" step="1">
+      </label>
+      <label>Liczba drzwi (frontów)
+        <input id="mDrzwi" type="number" min="0" step="1">
+      </label>
+      <label>System szuflad
+        <select id="mSystemSzuflad"></select>
+      </label>
+      <label>Typ konstrukcji szuflad
+        <select id="mTypSzuflady">
+          <option value="przod_tylko">Tylko front (system metalowy np. Blum)</option>
+          <option value="drewniana">Drewniana (pełna konstrukcja)</option>
+        </select>
+      </label>
+      <label>Szuflady niskie (N)
+        <input id="mSzufladyNiska" type="number" min="0" step="1" value="0">
+      </label>
+      <label>Wys. frontu niskiej [mm]
+        <input id="mWysNiska" type="number" min="50" step="1">
+      </label>
+      <label>Szuflady średnie (M)
+        <input id="mSzufladySrednia" type="number" min="0" step="1" value="0">
+      </label>
+      <label>Wys. frontu średniej [mm]
+        <input id="mWysSrednia" type="number" min="50" step="1">
+      </label>
+      <label>Szuflady wysokie (K)
+        <input id="mSzufladyWysoka" type="number" min="0" step="1" value="0">
+      </label>
+      <label>Wys. frontu wysokiej [mm]
+        <input id="mWysWysoka" type="number" min="50" step="1">
+      </label>
+      <label class="checkbox-label">
+        <input id="mPlecy" type="checkbox" checked> Plecy (HDF 3mm)
+      </label>
+      <label>Kierunek usłojenia
+        <select id="mUslojenie">
+          <option value="pion">Pionowy</option>
+          <option value="poziom">Poziomy</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="module-color-picker">
+      <div class="selected-color-label">Dekor korpusu (domyślnie: dekor globalny):</div>
+      <div id="mDekorWybrany" class="selected-color-chip">— dekor globalny —</div>
+      <button id="btnWybierzDekorModulu" class="btn btn-ghost btn-sm">Wybierz inny dekor</button>
+      <button id="btnResetDekorModulu" class="btn btn-ghost btn-sm">Użyj globalnego</button>
+    </div>
+
+    <div class="module-color-picker">
+      <div class="selected-color-label">Dekor frontów (opcjonalnie — jeśli inny niż korpus):</div>
+      <div id="mDekorFrontowWybrany" class="selected-color-chip">— taki sam jak korpus —</div>
+      <button id="btnWybierzDekorFrontow" class="btn btn-ghost btn-sm">Wybierz kolor frontów</button>
+      <button id="btnResetDekorFrontow" class="btn btn-ghost btn-sm">Taki sam jak korpus</button>
+    </div>
+
+    <div class="module-agd">
+      <div class="selected-color-label">AGD w module (piekarnik, mikrofala, zmywarka, płyta, okap...):</div>
+      <div id="mAgdLista" class="agd-list"></div>
+      <div class="agd-add-row">
+        <select id="mAgdTyp"></select>
+        <input id="mAgdModel" type="text" placeholder="Model (opcjonalnie, np. Bosch HBG537EB4)">
+        <input id="mAgdSzer" type="number" min="0" step="1" title="Szerokość niszy [mm]" placeholder="szer. mm">
+        <input id="mAgdWys" type="number" min="0" step="1" title="Wysokość niszy [mm]" placeholder="wys. mm">
+        <button id="btnDodajAgd" type="button" class="btn btn-ghost btn-sm">+ Dodaj</button>
+      </div>
+    </div>
+
+    <div class="modal-preview">
+      <div class="selected-color-label">Podgląd modułu (widok z przodu):</div>
+      <div id="mPodglad" class="module-preview-box"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="btnAnulujModul" class="btn btn-ghost">Anuluj</button>
+      <button id="btnZapiszModul" class="btn btn-primary">Zapisz moduł</button>
+    </div>
+  </div>
+</div>
+
+<script src="calc.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
