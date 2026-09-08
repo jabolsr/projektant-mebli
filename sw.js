@@ -4,7 +4,7 @@
 // CACHE_VERSION jest automatycznie podbijany przez skrypt pakujący
 // (spakuj_do_apki.py) przy każdej aktualizacji bazy kolorów, żeby telefon
 // pobrał świeże dane zamiast trzymać się starej wersji z cache.
-const CACHE_VERSION = "v1788815107";
+const CACHE_VERSION = "v1788891960";
 const CACHE_NAME = "projektant-mebli-" + CACHE_VERSION;
 
 const APP_SHELL = [
@@ -25,19 +25,12 @@ self.addEventListener("install", (event) => {
       const cache = await caches.open(CACHE_NAME);
       await cache.addAll(APP_SHELL);
       try {
-        const resp = await fetch("data/kolory.json");
-        const kolory = await resp.json();
-        await cache.put("data/kolory.json", new Response(JSON.stringify(kolory), {
-          headers: { "Content-Type": "application/json" },
-        }));
-        const obrazy = new Set();
-        kolory.forEach((k) => {
-          if (k.miniatura) obrazy.add(k.miniatura);
-          if (k.pelny) obrazy.add(k.pelny);
-        });
-        await cache.addAll(Array.from(obrazy));
+        // Kolory razem z miniaturami (zaszytymi jako base64) są w jednym
+        // pliku data/kolory.json — wystarczy go scache'ować, obrazów nie
+        // trzeba już pobierać osobno.
+        await cache.add("data/kolory.json");
       } catch (e) {
-        console.error("Błąd cache'owania danych/obrazów:", e);
+        console.error("Błąd cache'owania danych kolorów:", e);
       }
       self.skipWaiting();
     })()

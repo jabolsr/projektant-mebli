@@ -1,0 +1,79 @@
+{
+  "nazwa_projektu": "Kuchnia — przykład",
+  "moduly": [
+    {
+      "nazwa_modulu": "Zmywarka 60",
+      "szerokosc": 600,
+      "wysokosc": 824,
+      "glebokosc": 560,
+      "drzwi": 0,
+      "plecy": false,
+      "agd": [
+        { "typ": "zmywarka", "model": "Bosch SMV4HVX14E", "miejsce": "front" }
+      ]
+    },
+    {
+      "nazwa_modulu": "Szafka pod umywalką 60",
+      "typ": "szafka_dolna",
+      "szerokosc": 600,
+      "drzwi": 1,
+      "polki": 0
+    },
+    {
+      "nazwa_modulu": "Szafka z płytą i szufladami 60",
+      "typ": "szafka_dolna",
+      "szerokosc": 600,
+      "drzwi": 0,
+      "szuflady_niska": 1,
+      "szuflady_srednia": 1,
+      "szuflady_wysoka": 1,
+      "agd": [
+        { "typ": "plyta", "model": "Electrolux KGG64362S", "miejsce": "blat" }
+      ]
+    },
+    {
+      "nazwa_modulu": "Szafka z szufladami 45",
+      "typ": "szafka_dolna",
+      "szerokosc": 450,
+      "drzwi": 0,
+      "szuflady_niska": 1,
+      "szuflady_srednia": 1,
+      "szuflady_wysoka": 1
+    },
+    {
+      "nazwa_modulu": "Słupek: mikrofala + piekarnik",
+      "typ": "slupek",
+      "szerokosc": 600,
+      "wysokosc": 2000,
+      "glebokosc": 560,
+      "drzwi": 1,
+      "agd": [
+        { "typ": "mikrofala", "model": "Bosch BFL623MB3", "miejsce": "front" },
+        { "typ": "piekarnik", "model": "Bosch HBG537EB4", "miejsce": "front" }
+      ]
+    },
+    {
+      "nazwa_modulu": "Szafka górna nad zlewem",
+      "typ": "szafka_gorna",
+      "szerokosc": 600,
+      "drzwi": 1
+    },
+    {
+      "nazwa_modulu": "Szafka górna nad płytą (z okapem)",
+      "typ": "szafka_gorna",
+      "szerokosc": 600,
+      "drzwi": 1,
+      "agd": [
+        { "typ": "okap", "model": "VDB Fit 60 Inox", "miejsce": "gorna" }
+      ]
+    },
+    {
+      "nazwa_modulu": "Szafka górna do sufitu (głęboka)",
+      "typ": "szafka_gorna",
+      "szerokosc": 600,
+      "wysokosc": 400,
+      "glebokosc": 580,
+      "drzwi": 1
+    }
+  ]
+}

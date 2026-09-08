@@ -42,9 +42,11 @@ Uruchom (z wnętrza folderu `projektant_pwa`):
 python spakuj_do_apki.py
 ```
 
-Skrypt skopiuje i skompresuje miniaturki kolorów do `projektant_pwa/data/`.
-Zobaczysz podsumowanie ile dekorów spakowano i jaki to rozmiar (zwykle
-kilkanaście MB — appka mimo to zainstaluje się szybko).
+Skrypt skompresuje miniaturki kolorów i zaszyje je bezpośrednio w jednym
+pliku `projektant_pwa/data/kolory.json` (jako base64) — dzięki temu do
+wgrania na GitHub jest jeden plik, a nie setki osobnych zdjęć, które
+łatwo "udławią" wgrywanie przez przeglądarkę. Zobaczysz podsumowanie ile
+dekorów spakowano i jaki to rozmiar (zwykle kilka–kilkanaście MB).
 
 ## Krok 2 — wystaw appkę w internecie (GitHub Pages, za darmo)
 
@@ -53,11 +55,12 @@ kilkanaście MB — appka mimo to zainstaluje się szybko).
    `projektant-mebli`, zostaw jako **Public**, kliknij **Create repository**.
 3. Na stronie repozytorium kliknij link **„uploading an existing file”**
    (albo przycisk **Add file → Upload files**).
-4. Przeciągnij **całą zawartość** folderu `projektant_pwa` (czyli
-   `index.html`, `app.js`, `calc.js`, `style.css`, `manifest.json`, `sw.js`,
-   foldery `data/` i `icons/` — wszystko co jest w środku, nie sam folder)
-   do okna przeglądarki. Poczekaj aż się wgra (przy większej bazie kolorów
-   może to chwilę potrwać), potem kliknij **Commit changes**.
+4. Przeciągnij **całą zawartość** folderu `projektant_pwa` do okna
+   przeglądarki: pliki `index.html`, `app.js`, `calc.js`, `style.css`,
+   `manifest.json`, `sw.js`, `README.md`, `spakuj_do_apki.py`, folder
+   `icons/` (6 małych plików) oraz folder `data/` (już tylko **jeden plik**
+   `kolory.json` w środku — dzięki temu wgrywanie jest niezawodne). Poczekaj
+   aż się wgra, potem kliknij **Commit changes**.
 5. Wejdź w zakładkę repozytorium **Settings → Pages** (w menu po lewej).
 6. Przy „Branch” wybierz **main** i folder **/ (root)** → **Save**.
 7. Po chwili (1–2 minuty) GitHub pokaże adres appki, coś w stylu:
@@ -94,6 +97,14 @@ na iPhonie (z internetem, chociaż raz) pobierze nowe kolory automatycznie.
   Safari — możesz zapisać jako PDF i wysłać klientowi mailem).
 - Reszta — wybór dekoru, moduły, szuflady wg klas Blum, AGD, wizualizacja,
   zapis projektu — działa identycznie, ten sam silnik obliczeń.
+
+## Import z appki Claude (dyktowanie opisu → gotowe moduły)
+
+Zamiast klikać każdy moduł osobno, możesz opisać całą zabudowę słowami
+(nawet dyktując w appce Claude, stojąc u klienta) i wkleić gotowy wynik
+przyciskiem **„Importuj z tekstu"** w górnym pasku. Pełna instrukcja,
+gotowy szablon promptu i przykładowy plik do przetestowania —
+w `IMPORT_Z_CLAUDE.md` (obok tego README) i `przyklad_import.json`.
 
 ## Prywatność
 

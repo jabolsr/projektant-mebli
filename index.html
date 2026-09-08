@@ -28,6 +28,7 @@
     <input id="nazwaProjektu" type="text" value="Mój projekt" placeholder="Nazwa projektu">
     <button id="btnZapisz" class="btn btn-ghost">Zapisz projekt</button>
     <button id="btnWczytaj" class="btn btn-ghost">Wczytaj projekt</button>
+    <button id="btnImportTekst" class="btn btn-ghost">Importuj z tekstu</button>
     <button id="btnDrukuj" class="btn btn-ghost">Drukuj / zapisz PDF</button>
     <button id="btnEksport" class="btn btn-primary">Eksportuj listę formatek (CSV)</button>
   </div>
@@ -92,6 +93,24 @@
   </section>
 
 </main>
+
+<div id="modalImport" class="modal hidden">
+  <div class="modal-content">
+    <h2>Importuj z tekstu</h2>
+    <p style="font-size:13px;color:var(--text-dim);">
+      Wklej tutaj gotowy JSON z listą modułów (np. wygenerowany przez Claude
+      na podstawie Twojego dyktowanego opisu — patrz README, sekcja
+      „Import z appki Claude”). Nowe moduły zostaną <strong>dodane</strong>
+      do bieżącego projektu (istniejące moduły zostają bez zmian).
+    </p>
+    <textarea id="importTextarea" rows="12" style="width:100%; font-family:monospace; font-size:12px; padding:10px; border:1px solid var(--border); border-radius:8px;" placeholder='[{"nazwa_modulu": "Szafka pod zlew 60", "szerokosc": 600, "wysokosc": 720, "glebokosc": 560, "drzwi": 1, ...}]'></textarea>
+    <div id="importBlad" style="color:#b23b3b; font-size:13px; margin-top:8px;"></div>
+    <div class="modal-actions">
+      <button id="btnAnulujImport" class="btn btn-ghost">Anuluj</button>
+      <button id="btnWykonajImport" class="btn btn-primary">Importuj moduły</button>
+    </div>
+  </div>
+</div>
 
 <div id="modalModul" class="modal hidden">
   <div class="modal-content">

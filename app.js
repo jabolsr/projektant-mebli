@@ -412,6 +412,122 @@ function dodajAgd() {
 }
 
 // ---------------------------------------------------------------------
+// Import modułów z tekstu/JSON (np. wygenerowanego przez Claude)
+// ---------------------------------------------------------------------
+function znajdzDekorPoKodzieLubNazwie(kod, nazwa) {
+  if (kod) {
+    const trafienie = KOLORY.find(k => (k.kod || "").toLowerCase() === String(kod).toLowerCase());
+    if (trafienie) return trafienie;
+  }
+  if (nazwa) {
+    const trafienie = KOLORY.find(k => (k.nazwa || "").toLowerCase() === String(nazwa).toLowerCase());
+    if (trafienie) return trafienie;
+  }
+  return null;
+}
+
+function moduleFromImport(raw) {
+  const typKey = raw.typ && TYPY_DOMYSLNE[raw.typ] ? raw.typ : null;
+  const typDef = typKey ? TYPY_DOMYSLNE[typKey] : null;
+
+  const szerokosc = parseFloat(raw.szerokosc) || (typDef ? typDef.szerokosc : 0);
+  const wysokosc = parseFloat(raw.wysokosc) || (typDef ? typDef.wysokosc : 0);
+  const glebokosc = parseFloat(raw.glebokosc) || (typDef ? typDef.glebokosc : 0);
+
+  if (!szerokosc || !wysokosc || !glebokosc) {
+    throw new Error(`Moduł „${raw.nazwa_modulu || raw.nazwa || "?"}” — brak wymiarów (szerokosc/wysokosc/glebokosc).`);
+  }
+
+  const dekor = znajdzDekorPoKodzieLubNazwie(raw.dekor_kod, raw.dekor_nazwa);
+  const dekorFrontow = znajdzDekorPoKodzieLubNazwie(raw.dekor_frontow_kod, raw.dekor_frontow_nazwa);
+
+  const agd = Array.isArray(raw.agd) ? raw.agd.map(a => {
+    const kat = KATALOG_AGD[a.typ] || {};
+    return {
+      typ: a.typ || "inne",
+      nazwa: a.nazwa || kat.nazwa || "AGD",
+      model: a.model || "",
+      szerokosc: parseFloat(a.szerokosc) || kat.szerokosc || 560,
+      wysokosc: a.wysokosc !== undefined ? parseFloat(a.wysokosc) : (kat.wysokosc || 0),
+      miejsce: a.miejsce || kat.miejsce || "front",
+    };
+  }) : [];
+
+  return {
+    id: nextId++,
+    nazwa_modulu: raw.nazwa_modulu || raw.nazwa || (typDef ? typDef.nazwa : "Moduł"),
+    typ: typKey || "custom",
+    szerokosc, wysokosc, glebokosc,
+    grubosc: parseFloat(raw.grubosc) || 18,
+    polki: parseInt(raw.polki) || 0,
+    drzwi: parseInt(raw.drzwi) || 0,
+    system_szuflad: raw.system_szuflad && SYSTEMY_SZUFLAD[raw.system_szuflad] ? raw.system_szuflad : "legrabox",
+    typ_szuflady: raw.typ_szuflady === "drewniana" ? "drewniana" : "przod_tylko",
+    szuflady_niska: parseInt(raw.szuflady_niska) || 0,
+    szuflady_srednia: parseInt(raw.szuflady_srednia) || 0,
+    szuflady_wysoka: parseInt(raw.szuflady_wysoka) || 0,
+    wys_niska: raw.wys_niska ? parseFloat(raw.wys_niska) : null,
+    wys_srednia: raw.wys_srednia ? parseFloat(raw.wys_srednia) : null,
+    wys_wysoka: raw.wys_wysoka ? parseFloat(raw.wys_wysoka) : null,
+    plecy: raw.plecy !== false,
+    uslojenie: raw.uslojenie === "poziom" ? "poziom" : "pion",
+    dekor_kod: dekor ? dekor.kod : (raw.dekor_kod || null),
+    dekor_nazwa: dekor ? dekor.nazwa : (raw.dekor_nazwa || null),
+    dekor_miniatura: dekor ? dekor.miniatura : null,
+    dekor_frontow_kod: dekorFrontow ? dekorFrontow.kod : (raw.dekor_frontow_kod || null),
+    dekor_frontow_nazwa: dekorFrontow ? dekorFrontow.nazwa : (raw.dekor_frontow_nazwa || null),
+    dekor_frontow_miniatura: dekorFrontow ? dekorFrontow.miniatura : null,
+    agd,
+  };
+}
+
+function openImportModal() {
+  el("importTextarea").value = "";
+  el("importBlad").textContent = "";
+  el("modalImport").classList.remove("hidden");
+}
+
+function closeImportModal() {
+  el("modalImport").classList.add("hidden");
+}
+
+function wykonajImport() {
+  const raw = el("importTextarea").value.trim();
+  el("importBlad").textContent = "";
+  if (!raw) {
+    el("importBlad").textContent = "Wklej najpierw tekst/JSON do zaimportowania.";
+    return;
+  }
+  let dane;
+  try {
+    dane = JSON.parse(raw);
+  } catch (e) {
+    el("importBlad").textContent = "To nie jest poprawny JSON. Sprawdź, czy skopiowałeś całość, łącznie z nawiasami [ ] na początku i końcu.";
+    return;
+  }
+  const lista = Array.isArray(dane) ? dane : (Array.isArray(dane.moduly) ? dane.moduly : null);
+  if (!lista) {
+    el("importBlad").textContent = "Oczekiwano listy modułów — albo samej tablicy [...], albo obiektu z polem \"moduly\": [...].";
+    return;
+  }
+  if (dane.nazwa_projektu) {
+    el("nazwaProjektu").value = dane.nazwa_projektu;
+  }
+  const nowe = [];
+  try {
+    lista.forEach(raw => nowe.push(moduleFromImport(raw)));
+  } catch (e) {
+    el("importBlad").textContent = e.message;
+    return;
+  }
+  moduly = moduly.concat(nowe);
+  closeImportModal();
+  renderModuly();
+  recalc();
+  renderPodgladCaly();
+}
+
+// ---------------------------------------------------------------------
 // Moduły — lista i modal
 // ---------------------------------------------------------------------
 function renderModuly() {
@@ -750,6 +866,9 @@ function bindEvents() {
   el("btnDrukuj").addEventListener("click", drukujListe);
   el("btnZapisz").addEventListener("click", zapiszProjekt);
   el("btnWczytaj").addEventListener("click", wczytajProjekt);
+  el("btnImportTekst").addEventListener("click", openImportModal);
+  el("btnAnulujImport").addEventListener("click", closeImportModal);
+  el("btnWykonajImport").addEventListener("click", wykonajImport);
 
   el("btnWybierzDekorModulu").addEventListener("click", () => {
     wybierzDekorCel = "korpus";

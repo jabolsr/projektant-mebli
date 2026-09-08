@@ -8,10 +8,10 @@ już zbudowaną bazę `abler_kolory.db` i folder `obrazy/` (przez abler_sync.py)
 
 Co robi:
   1. Czyta aktywne dekory z abler_kolory.db.
-  2. Kompresuje ich miniatury i zaszywa jako base64 wprost w
-     projektant_pwa/data/kolory.json (bez osobnych plików obrazów) — dzięki
-     temu cały pakiet to garstka plików, którą da się bez problemu wgrać
-     na GitHub czy inny hosting.
+  2. Kompresuje ich miniatury i zaszywa bezpośrednio (jako base64) w jednym
+     pliku projektant_pwa/data/kolory.json — dzięki temu do wgrania na
+     GitHub jest JEDEN plik zamiast setek osobnych zdjęć (które łatwo
+     "udławią" wgrywanie przez przeglądarkę).
   3. Podbija numer wersji w sw.js, żeby telefon pobrał świeże dane zamiast
      starych z pamięci podręcznej.
 
@@ -26,14 +26,14 @@ Oczekiwana struktura folderów (przykład):
         spakuj_do_apki.py      <- ten skrypt
 """
 
-import base64
-import io
 import os
 import re
 import sqlite3
 import sys
 import time
 import json
+import base64
+import io
 
 try:
     from PIL import Image
@@ -49,8 +49,8 @@ OUT_DATA_DIR = os.path.join(SCRIPT_DIR, "data")
 OUT_JSON = os.path.join(OUT_DATA_DIR, "kolory.json")
 SW_PATH = os.path.join(SCRIPT_DIR, "sw.js")
 
-MAX_SZEROKOSC_PX = 420   # miniatury zmniejszane do tej szerokości - appka lekka i szybka
-JPEG_QUALITY = 82
+MAX_SZEROKOSC_PX = 260   # miniatury zmniejszane do tej szerokości - appka lekka i szybka
+JPEG_QUALITY = 72        # trochę niższa jakość niż zwykły plik, bo i tak to tylko miniaturka wyboru koloru
 
 
 def main():
@@ -75,7 +75,7 @@ def main():
 
     wynik = []
     pominieto = 0
-    for r in rows:
+    for i, r in enumerate(rows, start=1):
         if not r["plik_miniatura"]:
             pominieto += 1
             continue
@@ -107,6 +107,9 @@ def main():
             "miniatura": data_uri,
         })
 
+        if i % 50 == 0:
+            print(f"  ...przetworzono {i}/{len(rows)}")
+
     with open(OUT_JSON, "w", encoding="utf-8") as f:
         json.dump(wynik, f, ensure_ascii=False)
 
@@ -117,14 +120,18 @@ def main():
         sw_content = re.sub(r'const CACHE_VERSION = "v[^"]*";', f'const CACHE_VERSION = "{nowa_wersja}";', sw_content)
         open(SW_PATH, "w", encoding="utf-8").write(sw_content)
 
-    json_size = os.path.getsize(OUT_JSON)
+    rozmiar_mb = os.path.getsize(OUT_JSON) / 1024 / 1024
 
     print(f"Gotowe! Spakowano {len(wynik)} dekorów (pominięto: {pominieto}).")
-    print(f"Rozmiar {os.path.basename(OUT_JSON)}: {json_size / 1024 / 1024:.1f} MB (obrazki zaszyte w środku)")
+    print(f"Rozmiar pliku data/kolory.json: {rozmiar_mb:.1f} MB")
     print(f"Zapisano: {OUT_JSON}")
     print()
-    print("Następny krok: wgraj cały folder 'projektant_pwa' na darmowy hosting")
-    print("(np. GitHub Pages) i otwórz stronę w Safari na iPhonie —")
+    print("WAŻNE: to teraz JEDEN plik (kolory.json) zamiast setek zdjęć —")
+    print("wgraj go na GitHub tak samo jak resztę plików appki, osobno,")
+    print("jeśli przy wspólnym przeciąganiu znów coś się nie uda.")
+    print()
+    print("Następny krok: wgraj pliki z folderu 'projektant_pwa' na darmowy")
+    print("hosting (np. GitHub Pages) i otwórz stronę w Safari na iPhonie —")
     print("instrukcja w README.md.")
 
 
